@@ -1,6 +1,31 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
+
+
+class HealthView(APIView):
+    """ List all books, or create a new book """
+
+
+    def get(self, request, *args, **kwargs):
+        return Response({
+            "status": "ok"
+        })
+
+
+health_view = HealthView.as_view()
+
+
+
+
+
+
+
+
+
+
+
+
 # Create your views here.
 class BookView(APIView):
     """ List all books, or create a new book """
