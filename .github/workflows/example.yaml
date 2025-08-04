@@ -1,5 +1,12 @@
 name: Run the unit tests
-on: [push]
+on:
+  pull request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+      
 
 jobs:
   test:

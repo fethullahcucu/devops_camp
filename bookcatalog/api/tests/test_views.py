@@ -11,3 +11,12 @@ class BookViewTest(APITestCase):
         assert body['hello'] == 'django'
 
 
+class HealthViewTest(APITestCase):
+    def test_response_is_correct(self):
+        url = reverse('api:health')
+        response = self.client.get(url, format='json')
+        assert response.status_code == status.HTTP_200_OK
+        body = response.json()
+        assert body['status'] == 'ok'
+
+
