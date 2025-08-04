@@ -15,17 +15,6 @@ class HealthView(APIView):
 
 health_view = HealthView.as_view()
 
-
-
-
-
-
-
-
-
-
-
-
 # Create your views here.
 class BookView(APIView):
     """ List all books, or create a new book """
