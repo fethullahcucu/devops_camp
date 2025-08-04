@@ -20,3 +20,4 @@ class HealthViewTest(APITestCase):
         assert body['status'] == 'ok' # action test 3
 
 
+
