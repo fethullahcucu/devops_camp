@@ -1,12 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+from .models import Book
+from .serializers import BookSerializer
 
 
 class HealthView(APIView):
-    """ List all books, or create a new book """
-
-
     def get(self, request, *args, **kwargs):
         return Response({
             "status": "ok"
@@ -15,15 +13,15 @@ class HealthView(APIView):
 
 health_view = HealthView.as_view()
 
-# Create your views here.
+
 class BookView(APIView):
-    """ List all books, or create a new book """
-
-
     def get(self, request, *args, **kwargs):
-        return Response({
-            "hello": "django"
-        })
+        all_books = Book.objects.all()  # Get all books
+        serializer = BookSerializer(all_books, many=True)
+        return Response(serializer.data)
+
+    
 
 
 book_view = BookView.as_view()
+
