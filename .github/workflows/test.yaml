@@ -74,7 +74,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/fethuallahcucu/devops_camp/bookcatalog
+          images: ghcr.io/fethullahcucu/devops_camp/bookcatalog
       
       - name: Build and push
         uses: docker/build-push-action@v6
