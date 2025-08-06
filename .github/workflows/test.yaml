@@ -18,6 +18,7 @@ jobs:
       - uses: ./.github/actions/install-dependencies
       
       - name: Run pytest
+        working-directory: ./bookcatalog
         run: pytest
   
   runmigrations:
@@ -30,6 +31,7 @@ jobs:
       - uses: ./.github/actions/install-dependencies
       
       - name: Run django migrate
+        working-directory: ./bookcatalog
         run: python manage.py migrate
   
   migrations-check:
@@ -42,6 +44,7 @@ jobs:
       - uses: ./.github/actions/install-dependencies
       
       - name: Run makemigrations
+        working-directory: ./bookcatalog
         run: python manage.py makemigrations --check
   
   build-docker-image:
@@ -76,7 +79,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./bookcatalog
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
