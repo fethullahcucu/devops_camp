@@ -53,7 +53,7 @@ jobs:
       - test
       - runmigrations
       - migrations-check
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
     permissions:
       contents: read
       packages: write
