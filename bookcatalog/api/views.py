@@ -4,6 +4,7 @@ from rest_framework import status  # Add this import
 from django.shortcuts import get_object_or_404  # Add this import
 from .models import Book
 from .serializers import BookSerializer
+from django.views.generic import TemplateView
 
 
 class HealthView(APIView):
@@ -62,4 +63,11 @@ class BookView(APIView):
 
 
 book_view = BookView.as_view()
+
+
+class BookManagerView(TemplateView):
+    template_name = 'api/book_manager.html'
+
+
+book_manager_view = BookManagerView.as_view()
 
