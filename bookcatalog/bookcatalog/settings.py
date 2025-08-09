@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from environs import env
+import os
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -89,7 +91,7 @@ WSGI_APPLICATION = 'bookcatalog.wsgi.application'
 if DEVELOPMENT_MODE:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
+            'ENGINE': 'django.db.backends.postgresql',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
@@ -97,10 +99,10 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': DATABASE_NAME,
-            'USER': DATABASE_USER,
-            'PASSWORD': DATABASE_PASSWORD,
-            'HOST': DATABASE_HOST,
+            'NAME': os.environ.get('DATABASE_NAME', 'books'),
+            'USER': os.environ.get('DATABASE_USER', 'books'),
+            'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'books'),
+            'HOST': os.environ.get('DATABASE_HOST', 'db'),
             'PORT': '5432',
         }
     }

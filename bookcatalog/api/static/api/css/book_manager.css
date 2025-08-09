@@ -3,6 +3,23 @@ body {
     margin: 2em; 
 }
 
+.pod-info {
+    background-color: #e8f4f8;
+    border: 1px solid #bee5eb;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.pod-info h3 {
+    margin-top: 0;
+    color: #0c5460;
+}
+
+.pod-info p {
+    margin: 5px 0;
+}
+
 table { 
     border-collapse: collapse; 
     width: 100%; 

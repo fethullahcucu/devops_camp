@@ -69,6 +69,12 @@ book_view = BookView.as_view()
 
 class BookManagerView(TemplateView):
     template_name = 'api/book_manager.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pod_name'] = os.environ.get('HOSTNAME') or socket.gethostname()
+        context['pod_status'] = 'ok'
+        return context
 
 
 book_manager_view = BookManagerView.as_view()
