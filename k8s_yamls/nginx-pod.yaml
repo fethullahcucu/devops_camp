@@ -1,10 +1,10 @@
 apiVersion: v1
-kind: Pod
+kind: Pod # Declares a Pod resource directly.
 metadata:
-  name: nginx
+  name: nginx # The name of this specific pod.
 spec:
   containers:
-  - image: nginx
-    name: nginx
-  restartPolicy: Always
+  - image: nginx # The Docker image to use.
+    name: nginx # The name of the container.
+  restartPolicy: Always # The policy for restarting the container if it fails.
 

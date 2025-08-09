@@ -1,0 +1,38 @@
+body { 
+    font-family: Arial, sans-serif; 
+    margin: 2em; 
+}
+
+table { 
+    border-collapse: collapse; 
+    width: 100%; 
+    margin-bottom: 2em; 
+}
+
+th, td { 
+    border: 1px solid #ccc; 
+    padding: 8px; 
+    text-align: left; 
+}
+
+th { 
+    background: #f4f4f4; 
+}
+
+form { 
+    margin-bottom: 2em; 
+}
+
+input, textarea { 
+    margin: 0.5em 0; 
+    padding: 0.5em; 
+    width: 100%; 
+}
+
+button { 
+    padding: 0.5em 1em; 
+}
+
+.actions { 
+    white-space: nowrap; 
+}

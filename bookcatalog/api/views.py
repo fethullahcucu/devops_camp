@@ -5,6 +5,8 @@ from django.shortcuts import get_object_or_404  # Add this import
 from .models import Book
 from .serializers import BookSerializer
 from django.views.generic import TemplateView
+import os
+import socket
 
 
 class HealthView(APIView):
@@ -70,4 +72,15 @@ class BookManagerView(TemplateView):
 
 
 book_manager_view = BookManagerView.as_view()
+
+
+class PodInfoView(APIView):
+    def get(self, request, *args, **kwargs):
+        pod_name = os.environ.get('HOSTNAME') or socket.gethostname()
+        return Response({
+            "pod_name": pod_name,
+            "status": "ok"
+        })
+
+pod_info_view = PodInfoView.as_view()
 

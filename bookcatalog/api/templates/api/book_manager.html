@@ -1,19 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Book Manager</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 2em; }
-        table { border-collapse: collapse; width: 100%; margin-bottom: 2em; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background: #f4f4f4; }
-        form { margin-bottom: 2em; }
-        input, textarea { margin: 0.5em 0; padding: 0.5em; width: 100%; }
-        button { padding: 0.5em 1em; }
-        .actions { white-space: nowrap; }
-    </style>
+    <link rel="stylesheet" href="{% static 'api/css/book_manager.css' %}">
 </head>
 <body>
     <h1>Book Manager</h1>
@@ -27,6 +19,7 @@
         <button type="submit">Save Book</button>
         <button type="button" id="cancel-edit" style="display:none;">Cancel</button>
     </form>
+    
     <h2>All Books</h2>
     <table id="books-table">
         <thead>
@@ -42,85 +35,7 @@
         </thead>
         <tbody></tbody>
     </table>
-    <script>
-        const apiUrl = '/api/books/';
-        const tableBody = document.querySelector('#books-table tbody');
-        const form = document.getElementById('book-form');
-        const cancelEditBtn = document.getElementById('cancel-edit');
-        function fetchBooks() {
-            fetch(apiUrl)
-                .then(res => res.json())
-                .then(data => {
-                    tableBody.innerHTML = '';
-                    data.forEach(book => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${book.id}</td>
-                            <td>${book.title}</td>
-                            <td>${book.description || ''}</td>
-                            <td>${book.author}</td>
-                            <td>${book.new_field || ''}</td>
-                            <td>${book.created_at ? new Date(book.created_at).toLocaleString() : ''}</td>
-                            <td class="actions">
-                                <button onclick="editBook(${book.id})">Edit</button>
-                                <button onclick="deleteBook(${book.id})">Delete</button>
-                            </td>
-                        `;
-                        tableBody.appendChild(row);
-                    });
-                });
-        }
-        window.editBook = function(id) {
-            fetch(apiUrl)
-                .then(res => res.json())
-                .then(data => {
-                    const book = data.find(b => b.id === id);
-                    if (book) {
-                        document.getElementById('book-id').value = book.id;
-                        document.getElementById('title').value = book.title;
-                        document.getElementById('description').value = book.description;
-                        document.getElementById('author').value = book.author;
-                        document.getElementById('new_field').value = book.new_field;
-                        cancelEditBtn.style.display = '';
-                    }
-                });
-        }
-        window.deleteBook = function(id) {
-            if (!confirm('Delete this book?')) return;
-            fetch(apiUrl, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
-            }).then(() => fetchBooks());
-        }
-        form.onsubmit = function(e) {
-            e.preventDefault();
-            const id = document.getElementById('book-id').value;
-            const title = document.getElementById('title').value;
-            const description = document.getElementById('description').value;
-            const author = document.getElementById('author').value;
-            const new_field = document.getElementById('new_field').value;
-            const payload = { title, description, author, new_field };
-            if (id) payload.id = id;
-            fetch(apiUrl, {
-                method: id ? 'PUT' : 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(() => {
-                form.reset();
-                document.getElementById('book-id').value = '';
-                cancelEditBtn.style.display = 'none';
-                fetchBooks();
-            });
-        };
-        cancelEditBtn.onclick = function() {
-            form.reset();
-            document.getElementById('book-id').value = '';
-            cancelEditBtn.style.display = 'none';
-        };
-        fetchBooks();
-    </script>
+    
+    <script src="{% static 'api/js/book_manager.js' %}"></script>
 </body>
-</html> 
+</html>
