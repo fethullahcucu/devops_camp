@@ -16,9 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
+from django.views.generic import RedirectView
 #
 urlpatterns = [
+    path('', RedirectView.as_view(url='/api/books/manage/', permanent=False)),
     path('api/', include('api.urls')),
     path('admin/', admin.site.urls),
 ]
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '172.19.219.121']
 
