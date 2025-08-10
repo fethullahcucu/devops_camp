@@ -24,5 +24,3 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ]
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '172.19.219.121']
-

@@ -1,12 +1,15 @@
-from rest_framework.test import APITestCase
-from rest_framework import status
+from django.test import TestCase, Client
 from django.urls import reverse
+from django.contrib.auth.models import User
 from ..models import Book
+import os
+import socket
 
 
-class BookViewTest(APITestCase):
+class BookManagerViewTest(TestCase):
     def setUp(self):
         """Set up test data for each test method"""
+        self.client = Client()
         self.book1 = Book.objects.create(
             title="Demo", 
             description="Demo book", 
@@ -19,152 +22,127 @@ class BookViewTest(APITestCase):
             author="Demo Author Name 2",
             new_field="test_field_2"
         )
-        self.book3 = Book.objects.create(
-            title="Demo 3", 
-            description="Demo book 3", 
-            author="Demo Author Name 3",
-            new_field="test_field_3"
-        )
 
-    def test_get_all_books(self):
-        """Test GET request to retrieve all books"""
-        url = reverse('api:books')
-        response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_200_OK
-        body = response.json()
-        assert len(body) == 3
-        assert body[0]['title'] == self.book1.title
-        assert body[0]['description'] == self.book1.description
-        assert body[0]['author'] == self.book1.author
-
-    def test_create_book(self):
-        """Test POST request to create a new book"""
-        url = reverse('api:books')
-        new_book_data = {
-            'title': 'New Test Book',
-            'description': 'A book created for testing',
-            'author': 'Test Author',
-            'new_field': 'new_test_value'
-        }
-        response = self.client.post(url, new_book_data, format='json')
-        assert response.status_code == status.HTTP_200_OK
-        body = response.json()
-        assert body['title'] == new_book_data['title']
-        assert body['description'] == new_book_data['description']
-        assert body['author'] == new_book_data['author']
-        assert body['new_field'] == new_book_data['new_field']
+    def test_book_manager_page_loads(self):
+        """Test that the book manager page loads successfully"""
+        url = reverse('api:books')  # /api/books/manage/
+        response = self.client.get(url)
         
-        # Verify the book was actually created in the database
-        created_book = Book.objects.get(id=body['id'])
-        assert created_book.title == new_book_data['title']
+        # Should return HTML page, not JSON
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Book Manager")
+        self.assertContains(response, "Add / Update Book")
+        self.assertContains(response, "All Books")
 
-    def test_create_book_with_missing_fields(self):
-        """Test POST request with missing required fields"""
-        url = reverse('api:books')
-        incomplete_data = {
-            'title': 'Incomplete Book'
-            # Missing description, author, new_field
-        }
-        response = self.client.post(url, incomplete_data, format='json')
-        # Depending on your serializer validation, this might be 400
-        assert response.status_code in [status.HTTP_400_BAD_REQUEST, status.HTTP_200_OK]
-
-    def test_update_book(self):
-        """Test PUT request to update an existing book"""
-        url = reverse('api:books')
-        update_data = {
-            'id': self.book1.id,
-            'title': 'Updated Title',
-            'description': 'Updated description',
-            'author': 'Updated Author',
-            'new_field': 'updated_value'
-        }
-        response = self.client.put(url, update_data, format='json')
-        assert response.status_code == status.HTTP_200_OK
-        body = response.json()
-        assert body['title'] == update_data['title']
-        assert body['description'] == update_data['description']
-        assert body['author'] == update_data['author']
-        assert body['new_field'] == update_data['new_field']
+    def test_book_manager_context_data(self):
+        """Test that the book manager provides pod information in context"""
+        url = reverse('api:books')  # /api/books/manage/
+        response = self.client.get(url)
         
-        # Verify the book was actually updated in the database
-        updated_book = Book.objects.get(id=self.book1.id)
-        assert updated_book.title == update_data['title']
-        assert updated_book.description == update_data['description']
-
-    def test_update_book_partial(self):
-        """Test PUT request with partial update"""
-        url = reverse('api:books')
-        update_data = {
-            'id': self.book1.id,
-            'title': 'Partially Updated Title'
-        }
-        response = self.client.put(url, update_data, format='json')
-        assert response.status_code == status.HTTP_200_OK
-        body = response.json()
-        assert body['title'] == update_data['title']
-        # Other fields should remain unchanged
-        assert body['description'] == self.book1.description
-        assert body['author'] == self.book1.author
-
-    def test_update_nonexistent_book(self):
-        """Test PUT request for a book that doesn't exist"""
-        url = reverse('api:books')
-        update_data = {
-            'id': 9999,  # Non-existent ID
-            'title': 'Updated Title'
-        }
-        response = self.client.put(url, update_data, format='json')
-        assert response.status_code == status.HTTP_404_NOT_FOUND
-
-    def test_update_book_without_id(self):
-        """Test PUT request without providing book ID"""
-        url = reverse('api:books')
-        update_data = {
-            'title': 'Updated Title without ID'
-        }
-        response = self.client.put(url, update_data, format='json')
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-    def test_delete_book(self):
-        """Test DELETE request to remove a book"""
-        url = reverse('api:books')
-        book_id = self.book1.id
-        delete_data = {'id': book_id}
+        # Check that pod information is in the response
+        self.assertContains(response, "Pod Information")
+        self.assertContains(response, "Pod Name:")
+        self.assertContains(response, "Status:")
         
-        # Verify book exists before deletion
-        assert Book.objects.filter(id=book_id).exists()
+        # Check context data
+        context = response.context
+        self.assertIn('pod_name', context)
+        self.assertIn('pod_status', context)
+        self.assertEqual(context['pod_status'], 'ok')
         
-        response = self.client.delete(url, delete_data, format='json')
-        assert response.status_code == status.HTTP_204_NO_CONTENT
+        # Pod name should be either HOSTNAME env var or system hostname
+        expected_pod_name = os.environ.get('HOSTNAME') or socket.gethostname()
+        self.assertEqual(context['pod_name'], expected_pod_name)
+
+    def test_book_manager_template_used(self):
+        """Test that the correct template is used"""
+        url = reverse('api:books')  # /api/books/manage/
+        response = self.client.get(url)
         
-        # Verify the book was actually deleted from the database
-        assert not Book.objects.filter(id=book_id).exists()
+        self.assertTemplateUsed(response, 'api/book_manager.html')
 
-    def test_delete_nonexistent_book(self):
-        """Test DELETE request for a book that doesn't exist"""
-        url = reverse('api:books')
-        delete_data = {'id': 9999}  # Non-existent ID
-        response = self.client.delete(url, delete_data, format='json')
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+    def test_book_manager_contains_form(self):
+        """Test that the book manager page contains the book form"""
+        url = reverse('api:books')  # /api/books/manage/
+        response = self.client.get(url)
+        
+        # Check for form elements
+        self.assertContains(response, 'id="book-form"')
+        self.assertContains(response, 'id="title"')
+        self.assertContains(response, 'id="description"')
+        self.assertContains(response, 'id="author"')
+        self.assertContains(response, 'id="new_field"')
+        self.assertContains(response, 'type="submit"')
 
-    def test_delete_book_without_id(self):
-        """Test DELETE request without providing book ID"""
-        url = reverse('api:books')
-        delete_data = {}
-        response = self.client.delete(url, delete_data, format='json')
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+    def test_book_manager_contains_table(self):
+        """Test that the book manager page contains the books table"""
+        url = reverse('api:books')  # /api/books/manage/
+        response = self.client.get(url)
+        
+        # Check for table structure
+        self.assertContains(response, 'id="books-table"')
+        self.assertContains(response, '<th>ID</th>')
+        self.assertContains(response, '<th>Title</th>')
+        self.assertContains(response, '<th>Description</th>')
+        self.assertContains(response, '<th>Author</th>')
+        self.assertContains(response, '<th>New Field</th>')
+        self.assertContains(response, '<th>Actions</th>')
 
+    def test_book_manager_includes_javascript(self):
+        """Test that the book manager includes the JavaScript file"""
+        url = reverse('api:books')  # /api/books/manage/
+        response = self.client.get(url)
+        
+        # Check that JavaScript file is included
+        self.assertContains(response, 'book_manager.js')
 
+    def test_book_manager_includes_css(self):
+        """Test that the book manager includes the CSS file"""
+        url = reverse('api:books')  # /api/books/manage/
+        response = self.client.get(url)
+        
+        # Check that CSS file is included
+        self.assertContains(response, 'book_manager.css')
 
+    def test_book_manager_responsive_meta_tag(self):
+        """Test that the page includes responsive meta tag"""
+        url = reverse('api:books')  # /api/books/manage/
+        response = self.client.get(url)
+        
+        self.assertContains(response, 'name="viewport"')
+        self.assertContains(response, 'width=device-width, initial-scale=1.0')
 
-class HealthViewTest(APITestCase):
-    def test_response_is_correct(self):
-        url = reverse('api:health')
-        response = self.client.get(url, format='json')
-        assert response.status_code == status.HTTP_200_OK
-        body = response.json()
-        assert body['status'] == 'ok' # action test 5
+    def test_pod_name_environment_variable(self):
+        """Test pod name uses HOSTNAME environment variable when available"""
+        # Set environment variable
+        test_hostname = "test-pod-123"
+        os.environ['HOSTNAME'] = test_hostname
+        
+        url = reverse('api:books')  # /api/books/manage/
+        response = self.client.get(url)
+        
+        # Should use environment variable
+        context = response.context
+        self.assertEqual(context['pod_name'], test_hostname)
+        self.assertContains(response, test_hostname)
+        
+        # Clean up
+        del os.environ['HOSTNAME']
+
+    def test_pod_name_fallback_to_hostname(self):
+        """Test pod name falls back to system hostname when HOSTNAME env var not set"""
+        # Ensure HOSTNAME env var is not set
+        if 'HOSTNAME' in os.environ:
+            del os.environ['HOSTNAME']
+        
+        url = reverse('api:books')  # /api/books/manage/
+        response = self.client.get(url)
+        
+        # Should use system hostname
+        expected_hostname = socket.gethostname()
+        context = response.context
+        self.assertEqual(context['pod_name'], expected_hostname)
+        self.assertContains(response, expected_hostname)
 
 
 
