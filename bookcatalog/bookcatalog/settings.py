@@ -37,7 +37,7 @@ SECRET_KEY = 'django-insecure-=3k2v5o#6emh6gd54xt11mn1$b055x*^p&hr%j6cr))roonmdo
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '172.19.219.121']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'nginx-internal', '*.nginx-internal']
 
 
 # Application definition
@@ -87,12 +87,25 @@ WSGI_APPLICATION = 'bookcatalog.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+import sys
 
-if DEVELOPMENT_MODE:
+# For testing and development, use localhost; for production use 'db'
+if 'test' in sys.argv or 'pytest' in sys.modules:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',  # In-memory database for fast tests
+        }
+    }
+elif DEVELOPMENT_MODE:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': os.environ.get('DATABASE_NAME', 'books'),
+            'USER': os.environ.get('DATABASE_USER', 'books'),
+            'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'books'),
+            'HOST': os.environ.get('DATABASE_HOST', 'localhost'),  # Use localhost for local development/testing
+            'PORT': '5432',
         }
     }
 else:
@@ -102,7 +115,7 @@ else:
             'NAME': os.environ.get('DATABASE_NAME', 'books'),
             'USER': os.environ.get('DATABASE_USER', 'books'),
             'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'books'),
-            'HOST': os.environ.get('DATABASE_HOST', 'db'),
+            'HOST': os.environ.get('DATABASE_HOST', 'db'),  # Use 'db' for production/Kubernetes
             'PORT': '5432',
         }
     }
