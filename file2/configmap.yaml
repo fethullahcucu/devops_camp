@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  DATABASE_HOST: "db"
+  DATABASE_NAME: "books"
+  DATABASE_USER: "books"
+  DATABASE_PASSWORD: "books"
+  POSTGRES_DB: "books"
+  POSTGRES_USER: "books"
+  POSTGRES_PASSWORD: "books"

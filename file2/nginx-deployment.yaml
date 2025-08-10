@@ -1,0 +1,26 @@
+apiVersion: apps/v1 # Specifies the Kubernetes API version for this object.
+kind: Deployment # Declares that you are creating a Deployment resource.
+metadata: # Contains data that helps uniquely identify the object.
+  labels: # Labels are key/value pairs that are attached to objects.
+    app: nginx # This deployment itself has a label, useful for organization.
+  name: nginx-servers # The name of this Deployment resource.
+spec: # The specification of the desired behavior of the Deployment.
+  replicas: 3 # Tells the Deployment to run and maintain 3 identical pods.
+  selector: # Defines how the Deployment finds which pods to manage.
+    matchLabels: # The rule for finding pods.
+      service: nginx-server # It will manage any pod with the label "service: nginx-server".
+  template: # This is the blueprint for the pods that will be created.
+    metadata: # Metadata for the pods.
+      labels: # Labels to be applied to each pod created by this template.
+        service: nginx-server # This label is crucial. It matches the selector above.
+    spec: # Specification for the pods' content.
+      containers: # A list of containers to run inside each pod.
+      - image: ghcr.io/fethullahcucu/devops_camp/bookcatalog:v1.0.7 # The Docker image to use for the container.
+        name: fethullah-container # The name of the container inside the pod.
+        imagePullPolicy: Always # Always pull the latest version of the image
+        ports:
+        - containerPort: 8000 # Django app listens on port 8000
+        envFrom:
+        - configMapRef:
+            name: app-config
+      restartPolicy: Always
