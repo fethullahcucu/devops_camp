@@ -1,6 +1,5 @@
 asgiref==3.9.1
-backports-datetime-fromisoformat==2.0.3
-Django==5.2.4
+Django==4.2.11
 django-extensions==4.1
 djangorestframework==3.16.0
 environs==14.3.0
